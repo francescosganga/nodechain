@@ -1,10 +1,10 @@
-# Nodecoin
+# Nodechain
 
 ### Motivation
-Cryptocurrencies and smart-contracts on top of a blockchain aren't the most trivial concepts to understand, things like wallets, addresses, block proof-of-work, transactions and their signatures, make more sense when they are in a broad context. Inspired by [naivechain](https://github.com/lhartikk/naivechain), this project is an attempt to provide as concise and simple an implementation of a cryptocurrency as possible.
+Born from [Nodecoin](https://github.com/francescosganga/nodecoin)
 
-### What is cryptocurrency
-[From Wikipedia](https://en.wikipedia.org/wiki/Cryptocurrency) : A cryptocurrency (or crypto currency) is a digital asset designed to work as a medium of exchange using cryptography to secure the transactions and to control the creation of additional units of the currency.
+### What is blockchain
+[From Wikipedia](https://en.wikipedia.org/wiki/Blockchain): A blockchain, originally block chain, is a growing list of records, called blocks, which are linked using cryptography. Each block contains a cryptographic hash of the previous block, a timestamp, and transaction data.
 
 ### Key concepts of Nodecoin
 * Components
@@ -45,18 +45,6 @@ It's the starting point to interact with the nodecoin, and every node provides a
 |POST|/blockchain/transactions|Create a transaction|
 |GET|/blockchain/transactions/unspent|Get unspent transactions|
 
-##### Operator
-
-|Method|URL|Description|
-|------|---|-----------|
-|GET|/operator/wallets|Get all wallets|
-|POST|/operator/wallets|Create a wallet from a password|
-|GET|/operator/wallets/{walletId}|Get wallet by id|
-|GET|/operator/wallets/{walletId}/addresses|Get all addresses of a wallet|
-|POST|/operator/wallets/{walletId}/transactions|Create a new transaction|
-|POST|/operator/wallets/{walletId}/addresses|Create a new address|
-|GET|/operator/{addressId}/balance|Get the balance of a given address|
-
 ##### Node
 
 |Method|URL|Description|
@@ -94,37 +82,9 @@ A block is added to the block list if:
 2. The previous block is correct (previous hash == block.previousHash);
 3. The hash is correct (calculated block hash == block.hash);
 4. The difficulty level of the proof-of-work challenge is correct (difficulty at blockchain index _n_ < block difficulty);
-5. All transactions inside the block are valid;
-6. The sum of output transactions are equal the sum of input transactions + 50 coins representing the reward for the block miner;
-7. Check if there is a double spending in that block
-8. There is only 1 fee transaction and 1 reward transaction.
-
-A transaction inside a block is valid if:
-1. The transaction hash is correct (calculated transaction hash == transaction.hash);
-2. The signature of all input transactions are correct (transaction data is signed by the public key of the address);
-3. The sum of input transactions are greater than output transactions, it needs to leave some room for the transaction fee;
-4. The transaction isn't already in the blockchain
-5. All input transactions are unspent in the blockchain.
-
-You can read this [post](https://medium.com/@lhartikk/a-blockchain-in-200-lines-of-code-963cc1cc0e54#.dttbm9afr5) from [naivechain](https://github.com/lhartikk/naivechain) for more details about how the blockchain works.
-
-Transactions is a list of unconfirmed transactions. Nothing special about it. In this implementation, the list of transactions contains only the unconfirmed transactions. As soon as a transaction is confirmed, the blockchain removes it from this list.
-
-```
-[
-    transaction 1,
-    transaction 2,
-    transaction 3
-]
-```
-
-A transaction is added to the transaction list if:
-1. It's not already in the transaction list;
-2. The transaction hash is correct (calculated transaction hash == transaction.hash);
-3. The signature of all input transactions are correct (transaction data is signed by the public key of the address);
-4. The sum of input transactions are greater than output transactions, it needs to leave some room for the transaction fee;
-5. The transaction isn't already in the blockchain
-6. All input transactions are unspent in the blockchain;
+5. All data inside the block are valid;
+6. Check if there is a double spending in that block
+7. There is only 1 fee transaction and 1 reward transaction.
 
 ##### Block structure
 
@@ -136,101 +96,12 @@ A block represents a group of transactions and contains information that links i
     "previousHash": "0", // (hash of previous block, first block is 0) (64 bytes)
     "timestamp": 1465154705, // number of seconds since January 1, 1970
     "nonce": 0, // nonce used to identify the proof-of-work step.
-    "transactions": [ // list of transactions inside the block
-        { // transaction 0
-            "id": "63ec3ac02f...8d5ebc6dba", // random id (64 bytes)
-            "hash": "563b8aa350...3eecfbd26b", // hash taken from the contents of the transaction: sha256 (id + data) (64 bytes)
-            "type": "regular", // transaction type (regular, fee, reward)
-            "data": {
-                "inputs": [], // list of input transactions
-                "outputs": [] // list of output transactions
-            }
-        }
-    ],
+    "data": "string", // data
     "hash": "c4e0b8df46...199754d1ed" // hash taken from the contents of the block: sha256 (index + previousHash + timestamp + nonce + transactions) (64 bytes)
 }
 ```
 
 The details about the nonce and the proof-of-work algorithm used to generate the block will be described somewhere ahead.
-
-##### Transaction structure
-
-A transaction contains a list of inputs and outputs representing a transfer of coins between the coin owner and an address. The input list contains a list of existing unspent output transactions and it is signed by the address owner. The output list contains amounts to other addresses, including or not a change to the owner address.
-
-```javascript
-{ // Transaction
-    "id": "84286bba8d...7477efdae1", // random id (64 bytes)
-    "hash": "f697d4ae63...c1e85f0ac3", // hash taken from the contents of the transaction: sha256 (id + data) (64 bytes)
-    "type": "regular", // transaction type (regular, fee, reward)
-    "data": {
-        "inputs": [ // Transaction inputs
-            {
-                "transaction": "9e765ad30c...e908b32f0c", // transaction hash taken from a previous unspent transaction output (64 bytes)
-                "index": "0", // index of the transaction taken from a previous unspent transaction output
-                "amount": 5000000000, // amount of satoshis
-                "address": "dda3ce5aa5...b409bf3fdc", // from address (64 bytes)
-                "signature": "27d911cac0...6486adbf05" // transaction input hash: sha256 (transaction + index + amount + address) signed with owner address's secret key (128 bytes)
-            }
-        ],
-        "outputs": [ // Transaction outputs
-            {
-                "amount": 10000, // amount of satoshis
-                "address": "4f8293356d...b53e8c5b25" // to address (64 bytes)
-            },
-            {
-                "amount": 4999989999, // amount of satoshis
-                "address": "dda3ce5aa5...b409bf3fdc" // change address (64 bytes)
-            }
-        ]
-    }
-}
-```
-
-#### Operator
-
-The operator handles wallets and addresses as well the transaction creation. Most of its operation are CRUD related. Each operator has its list of wallets and addresses, meaning that they aren't synchronized between nodes.
-
-##### Wallet structure
-
-A wallet contains a random id number, the password hash and the secret generated from that password. It contains a list of key pairs each one representing an address.
-
-```javascript
-[
-    { // Wallet
-        "id": "884d3e0407...f29af094fd", // random id (64 bytes)
-        "passwordHash": "5ba9151d1c...1424be8e2c", // hash taken from password: sha256 (password) (64 bytes)
-        "secret": "6acb83e364...c1a04b6ee6", // pbkdf2 secret taken from password hash: sha512 (salt + passwordHash + random factor)
-        "keyPairs": [
-            {
-                "index": 1,
-                "secretKey": "6acb83e364...ee6bcdbc73", // EdDSA secret key generated from the secret (1024 bytes)
-                "publicKey": "dda3ce5aa5...b409bf3fdc" // EdDSA public key generated from the secret (64 bytes) (also known as address)
-            },
-            {
-                "index": 2,
-                "secretKey": "072ab010ed...246ed16d26", // EdDSA secret key generated from pbkdf2 (sha512 (salt + passwordHash + random factor)) over last address secret key (1024 bytes)
-                "publicKey": "4f8293356d...b53e8c5b25"  // EdDSA public key generated from the secret (64 bytes) (also known as address)
-            }     
-        ]
-    }
-]
-```
-
-##### Address structure
-
-The address is created in a deterministic way, meaning that for a given password, the next address is created based on the previous address (or the password secret if it's the first address).
-
-It uses the EdDSA algorithm to generate a secret public key pair using a seed that can come from a random generated value from the password hash (also in a deterministic way) or from the last secret key.
-
-```javascript
-{ // Address
-    "index": 1,
-    "secretKey": "6acb83e364...ee6bcdbc73", // EdDSA secret key generated from the secret (1024 bytes)
-    "publicKey": "dda3ce5aa5...b409bf3fdc" // EdDSA public key generated from the secret (64 bytes) (also known as address)
-},
-```
-
-Only the public key is exposed as the user's address.
 
 #### Miner
 
@@ -456,26 +327,6 @@ $ curl -X GET --header 'Content-Type: application/json' 'http://localhost:3001/b
     "address": "e155df3a1bac05f88321b73931b48b54ea4300be9d1225e0b62638f537e5544c"
   }
 ]
-```
-
-#### Docker
-
-```sh
-# Build the image
-$ docker build . -t nodecoin
-
-# Run nodecoin in a docker
-$ ./dockerExec.sh
-
-# Run nodecoin in a docker using port 3002
-$ ./dockerExec.sh -p 3002
-
-# Run nodecoin in a docker options
-$ ./dockerExec.sh -h
-Usage: ./dockerExec.sh -a HOST -p PORT -l LOG_LEVEL -e PEERS -n NAME
-
-# Run docker-compose with 3 nodes
-$ docker-compose up
 ```
 
 ### Client
