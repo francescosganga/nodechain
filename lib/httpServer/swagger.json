@@ -3,7 +3,7 @@
     "info": {
         "description": "Visualize the blockchain by accessing <a href='/blockchain' target='_blank'>here</a>.",
         "version": "0.0.1",
-        "title": "Nodecoin API"
+        "title": "Nodechain API"
     },
     "basePath": "/",
     "schemes": [
@@ -30,26 +30,6 @@
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/addBlock"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/blockchain/addBlock": {
-            "get": {
-                "tags": [
-                    "blockchain"
-                ],
-                "summary": "Add new blocks",
-                "description": "",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Block"
                             }
                         }
                     }
@@ -176,15 +156,11 @@
                         "schema": {
                             "type": "object",
                             "required": [
-                                "rewardAddress"
+                                "data"
                             ],
                             "properties": {
-                                "rewardAddress": {
-                                    "description": "Address to send the reward",
-                                    "type": "string"
-                                },
-                                "feeAddress": {
-                                    "description": "Address to send the fee",
+                                "data": {
+                                    "description": "Data to include in the block",
                                     "type": "string"
                                 }
                             }
@@ -231,22 +207,5 @@
                 }
             }
         },
-        "Wallet": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "addresses": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "Address": {
-            "type": "string"
-        }
     }
 }
