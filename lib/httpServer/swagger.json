@@ -1,0 +1,252 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Visualize the blockchain by accessing <a href='/blockchain' target='_blank'>here</a>.",
+        "version": "0.0.1",
+        "title": "Nodecoin API"
+    },
+    "basePath": "/",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/blockchain/blocks": {
+            "get": {
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Get all blocks",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/addBlock"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/blockchain/addBlock": {
+            "get": {
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Add new blocks",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Block"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/blockchain/blocks/{index}": {
+            "get": {
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Get block by index",
+                "description": "",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "index",
+                        "description": "Index of the block",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Block"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/blockchain/blocks/{hash}": {
+            "get": {
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Get block by hash",
+                "description": "",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "hash",
+                        "description": "Hash of the block",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Block"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/blockchain/blocks/latest": {
+            "get": {
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Get the latest block",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Block"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Update the latest block",
+                "description": "",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Block to be evaluated",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Block"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    }
+                }
+            }
+        },
+        "/miner/mine": {
+            "post": {
+                "tags": [
+                    "miner"
+                ],
+                "summary": "Mine a new block",
+                "description": "Mine a new block and add it to the end of the blockchain.",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Mine request",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "rewardAddress"
+                            ],
+                            "properties": {
+                                "rewardAddress": {
+                                    "description": "Address to send the reward",
+                                    "type": "string"
+                                },
+                                "feeAddress": {
+                                    "description": "Address to send the fee",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Block"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Block": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer"
+                },
+                "previousHash": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object"
+                },
+                "hash": {
+                    "type": "string"
+                }
+            }
+        },
+        "Peer": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "Wallet": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "addresses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "Address": {
+            "type": "string"
+        }
+    }
+}
